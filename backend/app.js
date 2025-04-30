@@ -1,25 +1,32 @@
 const express = require('express');
 const dotenv = require('dotenv');
 dotenv.config();
-const connectDB = require('./src/config/db.config');
+const connectDB = require('./config/db'); // Import the database connection function
+const alertRoutes = require('./routes/alerts');
+const recommendationRoutes = require('./routes/recommendations');
+const cors = require('cors');
 
 
-// Next initialize the application
 const app = express();
+const port = 4000;
 
-// routing path
+// Connect to MongoDB
+connectDB();
+
+app.use(cors());
+// Middleware to parse JSON (if needed)
+app.use(express.json());
+
+// Define a simple route
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hello, MongoDB!');
 });
 
+app.use('/alerts', alertRoutes);
+app.use('/recommendations', recommendationRoutes);
+
+
 // Start the server
-app.listen(3000, () => {
-  try{
-    // Connect to the database
-    connectDB();
-  }catch (error) {
-    console.error('Error starting the server:', error);
-  }
-  
-  console.log('Server started on port 3000');
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
 });
