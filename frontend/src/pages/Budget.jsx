@@ -10,10 +10,8 @@ import {
 import { Link } from "react-router-dom";
 import { useBudget } from "../components/BudgetContext";
 
-
 const Budget = () => {
   const { totalBudget, setTotalBudget, categories, setCategories } = useBudget();
-
 
   const [newCategory, setNewCategory] = useState("");
   const [newBudget, setNewBudget] = useState("");
@@ -32,7 +30,7 @@ const Budget = () => {
         return;
       }
 
-      const colorPalette = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#6366F1", "#14B8A6", "#A855F7"];
+      const colorPalette = ["#B57EDC", "#D8BFD8", "#E6E6FA", "#9370DB", "#CBAACB", "#A390EE", "#CBA1FF"];
       const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
 
       setCategories([
@@ -74,28 +72,37 @@ const Budget = () => {
   };
 
   const handleRemoveCategory = (index) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this category?");
+    if (!confirmDelete) return;
+
     const updated = [...categories];
     updated.splice(index, 1);
     setCategories(updated);
   };
-  
+
+  const handleNumericInput = (e, setter) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) {
+      setter(value);
+    }
+  };
 
   const totalSpent = categories.reduce((sum, cat) => sum + cat.spent, 0);
   const remaining = totalBudget - totalSpent;
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
-      <h2 className="text-3xl font-bold text-gray-800">💸 Budget</h2>
+    <div className="p-8 max-w-4xl mx-auto space-y-8" style={{ backgroundColor: "#F3E8FF" }}>
+      <h2 className="text-3xl font-bold text-center text-[#6D597A]"> Budget</h2>
 
       {/* Total Budget */}
       <div className="p-6 bg-white border rounded-xl shadow">
         <h3 className="text-lg font-semibold text-gray-700">Total Budget</h3>
         <input
-          type="number"
+          type="text"
           placeholder="Enter your total budget"
           value={totalBudget}
-          onChange={(e) => setTotalBudget(Number(e.target.value))}
-          className="mt-3 p-3 w-full border rounded-md focus:ring-2 focus:ring-blue-500"
+          onChange={(e) => handleNumericInput(e, (val) => setTotalBudget(Number(val)))}
+          className="mt-3 p-3 w-full border rounded-md focus:ring-2 focus:ring-purple-400"
         />
       </div>
 
@@ -111,23 +118,24 @@ const Budget = () => {
             className="p-2 border rounded-md"
           />
           <input
-            type="number"
+            type="text"
             placeholder="Budget Amount"
             value={newBudget}
-            onChange={(e) => setNewBudget(e.target.value)}
+            onChange={(e) => handleNumericInput(e, setNewBudget)}
             className="p-2 border rounded-md"
           />
           <input
-            type="number"
+            type="text"
             placeholder="Spent Amount"
             value={newSpent}
-            onChange={(e) => setNewSpent(e.target.value)}
+            onChange={(e) => handleNumericInput(e, setNewSpent)}
             className="p-2 border rounded-md"
           />
         </div>
         <button
           onClick={handleAddCategory}
-          className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-5 py-2 text-white rounded-md hover:brightness-90"
+          style={{ backgroundColor: "#5FAF6D" }}
         >
           Add Category
         </button>
@@ -161,7 +169,7 @@ const Budget = () => {
               )}
               <button
                 onClick={() => handleEditCategory(index)}
-                className="text-blue-600 hover:underline"
+                className="text-purple-600 hover:underline"
               >
                 ✎
               </button>
@@ -177,7 +185,7 @@ const Budget = () => {
 
         {/* Edit Form */}
         {editingIndex !== null && (
-          <div className="p-4 mt-4 border rounded-lg bg-blue-50 space-y-3">
+          <div className="p-4 mt-4 border rounded-lg bg-purple-50 space-y-3">
             <h4 className="text-md font-semibold">Edit Category</h4>
             <input
               type="text"
@@ -186,21 +194,22 @@ const Budget = () => {
               className="p-2 border rounded-md w-full"
             />
             <input
-              type="number"
+              type="text"
               value={editedBudget}
-              onChange={(e) => setEditedBudget(e.target.value)}
+              onChange={(e) => handleNumericInput(e, setEditedBudget)}
               className="p-2 border rounded-md w-full"
             />
             <input
-              type="number"
+              type="text"
               value={editedSpent}
-              onChange={(e) => setEditedSpent(e.target.value)}
+              onChange={(e) => handleNumericInput(e, setEditedSpent)}
               className="p-2 border rounded-md w-full"
             />
             <div className="flex gap-2">
               <button
                 onClick={handleSaveEdit}
-                className="p-2 bg-green-600 text-white rounded-md"
+                className="p-2 text-white rounded-md"
+                style={{ backgroundColor: "#5FAF6D" }}
               >
                 Save
               </button>
@@ -243,10 +252,11 @@ const Budget = () => {
       )}
 
       {/* Link to Savings Page */}
-      <div className="text-center pt-4">
+      <div className="text-center pt-4 ">
         <Link
           to="/savings"
-          className="inline-block px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
+          className="inline-block px-6 py-2 text-white rounded-lg shadow hover:brightness-90 transition"
+          style={{ backgroundColor: "#6BBF73" }}
         >
           Go to Savings →
         </Link>

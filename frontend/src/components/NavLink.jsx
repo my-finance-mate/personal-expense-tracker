@@ -9,11 +9,12 @@ const NavLink = ({ name, path }) => {
   return (
     <Link
       to={path}
-      className={`px-3 py-2 rounded-md font-medium transition-colors duration-200 ${
-        isActive
-          ? "bg-indigo-600 text-white dark:bg-indigo-500"
-          : "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-      }`}
+      className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200
+        ${
+          isActive
+            ? "bg-[#C8B6FF] text-[#4A4A4A] shadow-md" // Lavender active
+            : "text-[#386641] hover:bg-[#A8D5BA] hover:text-[#1B4332]" // Cucumber hover
+        }`}
     >
       {name}
     </Link>

@@ -22,20 +22,16 @@ const Reports = () => {
 
   const handleDownload = async () => {
     const input = reportRef.current;
-    const canvas = await html2canvas(input, {
-      useCORS: true,
-      scale: 2,
-    });
+    const canvas = await html2canvas(input, { useCORS: true, scale: 2 });
     const imgData = canvas.toDataURL("image/png");
 
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
 
-    // Header Bar
-    pdf.setFillColor(76, 175, 80);
+    // Header
+    pdf.setFillColor(168, 213, 186); // Cucumber
     pdf.rect(0, 0, pageWidth, 20, "F");
 
-    // Load and draw logo icon
     try {
       const logo = await loadImage("/img/briefcase.png");
       pdf.addImage(logo, "PNG", 10, 4, 10, 10);
@@ -43,14 +39,12 @@ const Reports = () => {
       console.warn("Logo not loaded:", error);
     }
 
-    // Company Name Centered
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(16);
     const companyText = "EconoMe Pvt. Ltd.";
     const textWidth = pdf.getTextWidth(companyText);
     pdf.text(companyText, (pageWidth - textWidth) / 2, 12);
 
-    // Report Title and Date
     const currentDate = new Date().toLocaleDateString();
     pdf.setTextColor(33, 37, 41);
     pdf.setFontSize(12);
@@ -60,12 +54,10 @@ const Reports = () => {
     const titleWidth = pdf.getTextWidth(titleText);
     pdf.text(titleText, (pageWidth - titleWidth) / 2, 36);
 
-    // Report Image
     const imgWidth = 190;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     pdf.addImage(imgData, "PNG", 10, 42, imgWidth, imgHeight);
 
-    // Footer Centered
     const footerText = "© EconoMe Pvt. Ltd. | Empowering Smart Money Habits";
     const footerWidth = pdf.getTextWidth(footerText);
     pdf.setTextColor(150);
@@ -86,35 +78,37 @@ const Reports = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 text-center">📊 Reports</h2>
+    <div className="p-6 max-w-4xl mx-auto space-y-6" style={{ backgroundColor: "#F7F5FF", minHeight: "100vh" }}>
+      <h2 className="text-3xl font-bold text-center text-[#6D597A]"> Reports</h2>
 
       {/* Download Button */}
       <div className="text-right">
         <button
           onClick={handleDownload}
-          className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition"
+          className="bg-[#7abb94] hover:bg-[#9FD9B6] text-[#4A4A4A] font-semibold py-2 px-4 rounded transition"
         >
           ⬇️ Download PDF
         </button>
       </div>
 
       {/* Report Content */}
-      <div ref={reportRef} className="space-y-6 bg-white p-6 rounded-lg shadow">
+      <div ref={reportRef} className="space-y-6 bg-[#FFFFFF] p-6 rounded-lg shadow">
         {/* Spending Trends Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">
+        <div className="rounded-lg shadow-md p-6" style={{ backgroundColor: "#F3E8FF" }}>
+          <h3 className="text-lg font-semibold text-[#6D597A] mb-4">
             📈 Spending Overview
           </h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={spendingData}>
-              <XAxis dataKey="month" stroke="#888888" />
-              <YAxis stroke="#888888" />
-              <Tooltip />
+              <XAxis dataKey="month" stroke="#9A8C98" />
+              <YAxis stroke="#9A8C98" />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#ECE4F0", border: "none", color: "#4A4A4A" }}
+              />
               <Line
                 type="monotone"
                 dataKey="spent"
-                stroke="#F59E0B"
+                stroke="#C8B6FF"
                 strokeWidth={2}
               />
             </LineChart>
@@ -122,15 +116,14 @@ const Reports = () => {
         </div>
 
         {/* Category-wise Spending List */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+        <div className="rounded-lg shadow-md p-6" style={{ backgroundColor: "#E3F9E5" }}>
+          <h3 className="text-lg font-semibold text-[#386641] mb-2">
             🗂️ Category-wise Spending
           </h3>
-          <ul className="space-y-2 text-gray-600 list-disc list-inside">
+          <ul className="space-y-2 text-[#2F3E46] list-disc list-inside">
             {categories.map((cat, index) => (
               <li key={index}>
-                <span className="font-medium text-gray-800">{cat.name}:</span>{" "}
-                ${cat.spent}
+                <span className="font-medium text-[#31572C]">{cat.name}:</span> ${cat.spent}
               </li>
             ))}
           </ul>
