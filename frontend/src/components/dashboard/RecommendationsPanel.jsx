@@ -8,60 +8,60 @@ const RecommendationsPanel = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Mock transaction data for testing
-        const transactions = [
-          { date: "2025-04-01", category: "Groceries", amount: 85.50 },
-          { date: "2025-04-02", category: "Dining", amount: 45.00 },
-          { date: "2025-04-03", category: "Entertainment", amount: 60.00 },
-          { date: "2025-04-05", category: "Utilities", amount: 120.00 },
-          { date: "2025-04-07", category: "Savings", amount: 150.00 },
-          { date: "2025-04-10", category: "Dining", amount: 55.00 },
-          { date: "2025-04-12", category: "Subscriptions", amount: 35.00 },
-          { date: "2025-04-14", category: "Transport", amount: 25.00 }
-        ];
+  const fetchRecommendations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        // Calculate totals
-        const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
-        const totalSavings = transactions.find(t => t.category === "Savings")?.amount || 0;
+      // ✅ Fetch from your backend API
+      const response = await fetch("http://localhost:4000/expenses");
+      const data = await response.json();
 
-        const userProfile = {
-          monthlyIncome: 5000,
-          savingsGoal: totalSavings,
-          spendingLimits: {
-            dining: 500,
-            entertainment: 400,
-            shopping: 600
-          }
-        };
+      // 🔁 Convert backend data into transactions format
+      const transactions = data.map(exp => ({
+        date: exp.date.split('T')[0], // Format to YYYY-MM-DD
+        category: exp.category,
+        amount: exp.amount
+      }));
 
-        const recentActivity = {
-          transactions,
-          totalSpent,
-          savingsAmount: totalSavings
-        };
+      // ✅ Calculate totals
+      const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
+      const totalSavings = transactions.find(t => t.category === "Savings")?.amount || 0;
 
-        const data = await generateRecommendations(userProfile, recentActivity);
-        
-        if (!data || !data.summary) {
-          throw new Error("Invalid response from AI");
+      const userProfile = {
+        monthlyIncome: 5000,
+        savingsGoal: totalSavings,
+        spendingLimits: {
+          dining: 500,
+          entertainment: 400,
+          shopping: 600
         }
-        
-        setRecommendations(data);
-      } catch (err) {
-        console.error("Failed to fetch recommendations:", err);
-        setError(err.message || "Failed to generate recommendations");
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchRecommendations();
-  }, []);
+      const recentActivity = {
+        transactions,
+        totalSpent,
+        savingsAmount: totalSavings
+      };
+
+      const recommendationsData = await generateRecommendations(userProfile, recentActivity);
+
+      if (!recommendationsData || !recommendationsData.summary) {
+        throw new Error("Invalid response from AI");
+      }
+
+      setRecommendations(recommendationsData);
+    } catch (err) {
+      console.error("Failed to fetch recommendations:", err);
+      setError(err.message || "Failed to generate recommendations");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchRecommendations();
+}, []);
+
 
   if (loading) {
     return (
