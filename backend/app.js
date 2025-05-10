@@ -1,9 +1,9 @@
 const express = require('express');
 const dotenv = require('dotenv');
 dotenv.config();
-const connectDB = require('./config/db'); // Import the database connection function
-const alertRoutes = require('./routes/alerts');
-const recommendationRoutes = require('./routes/recommendations');
+const connectDB = require('./src/config/db.config')
+const alertRoutes = require('./src/routes/alerts');
+const recommendationRoutes = require('./src/routes/recommendations');
 const cors = require('cors');
 
 

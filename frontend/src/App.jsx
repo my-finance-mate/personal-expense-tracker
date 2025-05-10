@@ -3,7 +3,7 @@ import Dashboard from './pages/dashboard'
 function App() {
   return (
     <div className="App">
-      <dashboard />
+      <Dashboard />
     </div>
   )
 }
