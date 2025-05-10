@@ -19,7 +19,7 @@ const AlertsPanel = () => {
     const fetchAlerts = async () => {
       try {
         const response = await fetch(
-          "http://localhost:4000/alerts/654f8c2b3d9c8a1c4e8b4567"
+          "http://localhost:4000/alerts/681ba16b94ab07240fd6b21b"
         );
         if (!response.ok) {
           throw new Error("Failed to fetch alerts");

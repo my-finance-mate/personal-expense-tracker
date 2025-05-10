@@ -1,32 +1,36 @@
-const Transaction = require('../models/Transaction');
-const Budget = require('../models/Budget');
+const mongoose = require("mongoose");
+const connectSecondaryDB = require("../config/secondaryDB");
 
-// Generate Alerts and Recommendations
+// Connect to secondary DB (for expenses)
+const secondaryDB = connectSecondaryDB();
+const Expense = require("../models/expense.model")(secondaryDB);
+
+// Budget is in the primary DB
+const Budget = require("../models/Budget");
+
 exports.generateAlerts = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Fetch all transactions and budgets for the user
-    const transactions = await Transaction.find({ userId });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user ID format" });
+    }
+
+    const expenses = await Expense.find({ userId });
     const budgets = await Budget.find({ userId });
 
     const alerts = [];
     const recommendations = [];
-
-    // Analyze spending patterns
     const categoryTotals = {};
-    transactions
-      .filter((t) => t.type === 'expense')
-      .forEach((t) => {
-        if (!categoryTotals[t.category]) categoryTotals[t.category] = 0;
-        categoryTotals[t.category] += t.amount;
-      });
 
-    // Loop through each budget
+    expenses.forEach((e) => {
+      if (!categoryTotals[e.category]) categoryTotals[e.category] = 0;
+      categoryTotals[e.category] += e.amount;
+    });
+
     budgets.forEach((budget) => {
       const spent = categoryTotals[budget.category] || 0;
 
-      // 1. Overspending Alert
       if (spent > budget.amount) {
         alerts.push({
           category: budget.category,
@@ -34,15 +38,13 @@ exports.generateAlerts = async (req, res) => {
         });
       }
 
-      // 2. Nearing Budget Limit Alert
       if (spent > budget.amount * 0.8 && spent <= budget.amount) {
-        recommendations.push({
+        alerts.push({
           category: budget.category,
-          message: `You are nearing your budget limit in ${budget.category}. Consider reducing spending.`,
+          message: `You are nearing your budget limit in ${budget.category}. Spent: ${spent} of ${budget.amount}.`,
         });
       }
 
-      // 3. Zero Spending Alert
       if (spent === 0) {
         recommendations.push({
           category: budget.category,
@@ -50,34 +52,30 @@ exports.generateAlerts = async (req, res) => {
         });
       }
 
-      // 4. Unused Budget Alert
-      if (spent < budget.amount * 0.5) {
-        recommendations.push({
+      if (spent > 0 && spent < budget.amount * 0.5) {
+        alerts.push({
           category: budget.category,
           message: `You have only spent ${spent} in ${budget.category}, which is less than half of your budget (${budget.amount}).`,
         });
       }
     });
 
-    // 5. Unexpected High Spending Alert
-    const averageSpendingPerCategory = Object.values(categoryTotals).reduce(
-      (sum, total) => sum + total,
-      0
-    ) / Object.keys(categoryTotals).length;
+    const totalCategories = Object.keys(categoryTotals).length;
+    const totalSpent = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0);
+    const avgSpending = totalCategories ? totalSpent / totalCategories : 0;
 
     Object.entries(categoryTotals).forEach(([category, total]) => {
-      if (total > averageSpendingPerCategory * 2) {
+      if (total > avgSpending * 2 && avgSpending > 0) {
         alerts.push({
-          category: category,
-          message: `You have unusually high spending in ${category}. Total spent: ${total}. This is significantly above your average spending.`,
+          category,
+          message: `Unusually high spending in ${category}. Total spent: ${total}, which is well above your average of ${avgSpending.toFixed(2)}.`,
         });
       }
     });
 
-    // Return both alerts and recommendations
     res.status(200).json({ alerts, recommendations });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Alert Generation Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
