@@ -2,7 +2,8 @@ const express = require('express');
 const dotenv = require('dotenv');
 dotenv.config();
 const connectDB = require('./src/config/db.config');
-const connectSecondaryDB = require('./src/config/secondaryDB'); // ✅ Import secondary DB
+const connectSecondaryDB = require('./src/config/secondaryDB');
+const { initializeTransactionNotifications } = require('./src/controllers/notificationController');
 const alertRoutes = require('./src/routes/alerts');
 const recommendationRoutes = require('./src/routes/recommendations');
 const incomeRoutes = require('./src/routes/incomes');
@@ -12,20 +13,33 @@ const cors = require('cors');
 const app = express();
 const port = 4000;
 
-// ✅ Connect to primary and secondary MongoDB
-connectDB();
-const secondaryConnection = connectSecondaryDB(); // ✅ This establishes the connection
+// Connect to both MongoDB instances
+const startServer = async () => {
+  try {
+    await connectDB(); // Connect to primary DB
+    const secondaryConnection = await connectSecondaryDB(); // Connect to secondary DB
 
-app.use(cors());
-app.use(express.json());
+    // Initialize notifications for existing transactions
+    await initializeTransactionNotifications();
+    console.log('✅ Transaction notifications initialized');
 
-app.get('/', (req, res) => res.send('Hello, MongoDB!'));
+    app.use(cors());
+    app.use(express.json());
 
-app.use('/alerts', alertRoutes);
-app.use('/recommendations', recommendationRoutes);
-app.use('/incomes', incomeRoutes);
-app.use('/expenses', expenseRoutes);
+    app.get('/', (req, res) => res.send('Hello, MongoDB!'));
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
+    app.use('/alerts', alertRoutes);
+    app.use('/recommendations', recommendationRoutes);
+    app.use('/incomes', incomeRoutes);
+    app.use('/expenses', expenseRoutes);
+
+    app.listen(port, () => {
+      console.log(`Server is running at http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

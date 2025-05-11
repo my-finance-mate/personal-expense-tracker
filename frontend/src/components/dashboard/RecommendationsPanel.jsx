@@ -13,18 +13,15 @@ const RecommendationsPanel = () => {
       setLoading(true);
       setError(null);
 
-      // ✅ Fetch from your backend API
       const response = await fetch("http://localhost:4000/expenses");
       const data = await response.json();
 
-      // 🔁 Convert backend data into transactions format
       const transactions = data.map(exp => ({
-        date: exp.date.split('T')[0], // Format to YYYY-MM-DD
+        date: exp.date.split('T')[0], 
         category: exp.category,
         amount: exp.amount
       }));
 
-      // ✅ Calculate totals
       const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
       const totalSavings = transactions.find(t => t.category === "Savings")?.amount || 0;
 

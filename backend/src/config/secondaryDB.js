@@ -7,11 +7,11 @@ const connectSecondaryDB = () => {
   });
 
   connection.on('connected', () => {
-    console.log('✅ Connected to secondary MongoDB (Income/Expense DB)');
+    console.log('Connected to secondary MongoDB (Income/Expense DB)');
   });
 
   connection.on('error', (err) => {
-    console.error('❌ Error in secondary DB connection:', err);
+    console.error('Error in secondary DB connection:', err);
   });
 
   return connection;
